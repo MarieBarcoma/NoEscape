@@ -19,9 +19,8 @@ Interactive Fiction / Visual Novel
 ## 👥 Group Members
 
 * Shiella Marie L. Barcoma
-
-<!-- * Kent Vincent S. Donaire
+* Kent Vincent S. Donaire
 * Hadrian B. Esparcia
 * July Seffelly P. Paclibar
 * Karl Merrick T. Powao
-* Mark Nicole Villacampa -->
+* Mark Nicole Villacampa

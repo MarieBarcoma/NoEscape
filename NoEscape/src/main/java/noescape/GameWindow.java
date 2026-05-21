@@ -43,7 +43,6 @@ public class GameWindow extends JFrame {
         setLocationRelativeTo(null);
 
         add(buildHeaderPanel(), BorderLayout.NORTH);
-        add(buildCardArea(), BorderLayout.CENTER);
         add(buildFooter(), BorderLayout.SOUTH);
 
         setVisible(true);
