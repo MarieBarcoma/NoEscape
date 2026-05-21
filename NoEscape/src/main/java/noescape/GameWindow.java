@@ -5,28 +5,36 @@ import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class GameWindow extends JFrame {
+/**
+ * GAME WINDOW: Full GUI with swappable screen panels.
+ * Each screen (name entry, course select, room, etc.) is its own JPanel.
+ * No JTextArea/JTextPane — everything is real Swing components.
+ *
+ * OOP: Encapsulation - private fields, public API.
+ */
+public class GameWindow {
 
-    public static final Color BG_DARK = new Color(13,  13,  23);
-    public static final Color BG_CARD = new Color(22,  22,  40);
-    public static final Color BG_INPUT = new Color(18,  18,  32);
-    public static final Color COL_PURPLE = new Color(160,  80, 220);
-    public static final Color COL_CYAN = new Color( 60, 200, 220);
-    public static final Color COL_GREEN = new Color( 60, 200, 100);
-    public static final Color COL_YELLOW = new Color(240, 200,  60);
-    public static final Color COL_RED = new Color(220,  70,  70);
-    public static final Color COL_ORANGE = new Color(230, 140,  50);
+    public static final Color BG_DARK = new Color(13, 13, 23);
+    public static final Color BG_CARD = new Color(22, 22, 40);
+    public static final Color BG_INPUT = new Color(18, 18, 32);
+    public static final Color COL_PURPLE = new Color(160, 80, 220);
+    public static final Color COL_CYAN = new Color(60, 200, 220);
+    public static final Color COL_GREEN = new Color(60, 200, 100);
+    public static final Color COL_YELLOW = new Color(240, 200, 60);
+    public static final Color COL_RED = new Color(220, 70, 70);
+    public static final Color COL_ORANGE = new Color(230, 140, 50);
     public static final Color COL_TEXT = new Color(210, 210, 230);
     public static final Color COL_DIM = new Color(130, 120, 155);
-    public static final Color COL_BORDER = new Color( 55,  45,  85);
+    public static final Color COL_BORDER = new Color(55, 45, 85);
 
+    private JFrame window;
     private JLabel timerLabel;
     private JLabel roomLabel;
-    private JPanel cardArea;      // center — swapped per screen
     private JTextField inputField;
     private JButton submitButton;
     private JButton clueButton;
     private JButton hintButton;
+
     private ActionListener onCourseCS;
     private ActionListener onCourseNursing;
 
@@ -35,20 +43,21 @@ public class GameWindow extends JFrame {
     }
 
     private void buildWindow() {
-        setSize(860, 640);
-        setMinimumSize(new Dimension(720, 520));
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
-        getContentPane().setBackground(BG_DARK);
-        setLocationRelativeTo(null);
+        window = new JFrame("NO ESCAPE");
+        window.setSize(860, 640);
+        window.setMinimumSize(new Dimension(720, 520));
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setLayout(new BorderLayout());
+        window.getContentPane().setBackground(BG_DARK);
+        window.setLocationRelativeTo(null);
 
-        add(buildHeaderPanel(), BorderLayout.NORTH);
-        add(buildFooter(), BorderLayout.SOUTH);
+        window.add(buildHeader(), BorderLayout.NORTH);
+        window.add(buildFooter(), BorderLayout.SOUTH);
 
-        setVisible(true);
+        window.setVisible(true);
     }
 
-    private JPanel buildHeaderPanel() {
+    private JPanel buildHeader() {
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(new Color(8, 8, 18));
         h.setBorder(new MatteBorder(0, 0, 2, 0, COL_PURPLE));
@@ -125,6 +134,7 @@ public class GameWindow extends JFrame {
         inner.add(makeCenteredLabel("Type your name below and press  Submit.", COL_DIM, 13, Font.PLAIN));
     }
 
+    // ── SCREEN: Choose Course ─────────────────────────────────────────────────
     public void showChooseCourseScreen(String playerName, ActionListener csAction, ActionListener nursingAction) {
         roomLabel.setText("Choose Your Course");
         JPanel card = makeCard();
@@ -151,12 +161,14 @@ public class GameWindow extends JFrame {
         // Nursing button
         JButton nurseBtn = makeBigCourseBtn(
             "🏥  Nursing",
-            "No time bonus ·  5 attempts per room",
+            "No time bonus  ·  5 attempts per room",
             new Color(255, 130, 180), nursingAction
         );
         inner.add(nurseBtn);
         inner.add(Box.createVerticalStrut(20));
         inner.add(makeCenteredLabel("Or type  1  or  2  and press Submit.", COL_DIM, 12, Font.PLAIN));
+
+        card.add(inner);
     }
 
     public void showSplashScreen(Player player) {
@@ -172,13 +184,13 @@ public class GameWindow extends JFrame {
         inner.add(Box.createVerticalStrut(24));
         inner.add(makeDivider());
         inner.add(Box.createVerticalStrut(18));
-        inner.add(makeCenteredLabel("Player :  " + player.getName(), COL_TEXT, 15, Font.PLAIN));
+        inner.add(makeCenteredLabel("Player  :  " + player.getName(), COL_TEXT, 15, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
-        inner.add(makeCenteredLabel("Course :  " + player.getCourse(), COL_CYAN, 15, Font.PLAIN));
+        inner.add(makeCenteredLabel("Course  :  " + player.getCourse(), COL_CYAN,15, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
         inner.add(makeCenteredLabel("Attempts:  " + player.getMaxAttempts() + " per room", COL_TEXT, 14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
-        inner.add(makeCenteredLabel("Bonus :  +" + player.getBonusSeconds() + " seconds", COL_GREEN, 14, Font.PLAIN));
+        inner.add(makeCenteredLabel("Bonus   :  +" + player.getBonusSeconds() + " seconds", COL_GREEN, 14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(26));
         inner.add(makeDivider());
         inner.add(Box.createVerticalStrut(22));
@@ -194,9 +206,11 @@ public class GameWindow extends JFrame {
         );
         startBtn.setMaximumSize(new Dimension(320, 70));
         inner.add(startBtn);
+
+        card.add(inner);
     }
 
-    public void showRoomScreen(Room room, int index, int total, Player player, String adminMsg, Room[] rooms, int currentIndex) {
+    public void showRoomScreen(RoomBehavior room, int index, int total, Player player, String adminMsg, RoomBehavior[] rooms, int currentIndex) {
         roomLabel.setText("Room " + (index + 1) + " of " + total + "  —  " + room.getName());
 
         JPanel card = makeCard();
@@ -254,7 +268,7 @@ public class GameWindow extends JFrame {
         bottom.add(Box.createVerticalStrut(10));
         bottom.add(buildRoomMap(rooms, currentIndex));
 
-        card.add(top, BorderLayout.CENTER);
+        card.add(top,    BorderLayout.CENTER);
         card.add(bottom, BorderLayout.SOUTH);
     }
 
@@ -275,7 +289,7 @@ public class GameWindow extends JFrame {
         inner.add(Box.createVerticalStrut(24));
         inner.add(makeDivider());
         inner.add(Box.createVerticalStrut(14));
-        inner.add(makeCenteredLabel("Course: " + player.getCourse(), COL_CYAN,   14, Font.PLAIN));
+        inner.add(makeCenteredLabel("Course    :  " + player.getCourse(),    COL_CYAN,   14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
         inner.add(makeCenteredLabel("Time left :  " + secondsLeft + " seconds", COL_GREEN, 14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(14));
@@ -303,6 +317,8 @@ public class GameWindow extends JFrame {
         );
         exitWinBtn.setMaximumSize(new Dimension(320, 70));
         inner.add(exitWinBtn);
+
+        card.add(inner);
     }
 
     public void showLoopScreen(Player player, String adminMsg) {
@@ -345,17 +361,19 @@ public class GameWindow extends JFrame {
         );
         exitBtn.setMaximumSize(new Dimension(320, 70));
         inner.add(exitBtn);
+
+        card.add(inner);
     }
 
-    private JPanel buildRoomMap(Room[] rooms, int currentIndex) {
+    private JPanel buildRoomMap(RoomBehavior[] rooms, int currentIndex) {
         JPanel map = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         map.setOpaque(false);
         for (int i = 0; i < rooms.length; i++) {
             Color c;
             String icon;
-            if (rooms[i].isSolved()) { c = COL_GREEN; icon = "✓"; }
+            if (rooms[i].isSolved()) { c = COL_GREEN;  icon = "✓"; }
             else if (i == currentIndex) { c = COL_PURPLE; icon = "►"; }
-            else if (rooms[i].isLocked()) { c = COL_DIM; icon = "🔒"; }
+            else if (rooms[i].isLocked()) { c = COL_DIM;    icon = "🔒"; }
             else { c = COL_YELLOW; icon = " "; }
 
             JPanel chip = new JPanel();
@@ -377,6 +395,9 @@ public class GameWindow extends JFrame {
         return map;
     }
 
+    
+
+    // Dark card panel
     private JPanel makeCard() {
         JPanel card = new JPanel();
         card.setBackground(BG_CARD);
@@ -387,6 +408,7 @@ public class GameWindow extends JFrame {
         return card;
     }
 
+    // Centered label aligned to center of its parent
     private JLabel makeCenteredLabel(String text, Color color, int size, int style) {
         JLabel lbl = new JLabel(text, SwingConstants.CENTER);
         lbl.setFont(new Font("Consolas", style, size));
@@ -461,6 +483,7 @@ public class GameWindow extends JFrame {
         return btn;
     }
 
+    // Small footer button
     private JButton makeBtn(String text, Color accent) {
         JButton btn = new JButton(text) {
             @Override protected void paintComponent(Graphics g) {
@@ -488,21 +511,24 @@ public class GameWindow extends JFrame {
         return btn;
     }
 
+    // Wrap long text into multiple lines
     private String[] wrapText(String text, int maxChars) {
         if (text.length() <= maxChars) return new String[]{text};
         java.util.List<String> lines = new java.util.ArrayList<>();
         String[] words = text.split(" ");
         StringBuilder line = new StringBuilder();
         for (String w : words) {
-            if(line.length() + w.length() + 1 > maxChars && line.length() > 0) {
+            if (line.length() + w.length() + 1 > maxChars && line.length() > 0) {
                 lines.add(line.toString().trim());
                 line = new StringBuilder();
             }
             line.append(w).append(" ");
         }
-        if(line.length() > 0) lines.add(line.toString().trim());
+        if (line.length() > 0) lines.add(line.toString().trim());
         return lines.toArray(new String[0]);
     }
+
+    // ── Public API ────────────────────────────────────────────────────────────
 
     public void attachListeners(ActionListener onSubmit, ActionListener onClue, ActionListener onHint) {
         submitButton.addActionListener(onSubmit);
@@ -520,14 +546,16 @@ public class GameWindow extends JFrame {
 
     public void setRoomLabel(String text) { roomLabel.setText(text); }
 
+    // Print feedback into the current card (appends a small label at bottom of cardArea)
     public void showFeedback(String msg, Color color) {
-        
+        // Walk the card to find or create a feedback label
         Component[] comps = cardArea.getComponents();
         if (comps.length > 0 && comps[0] instanceof JPanel) {
             JPanel card = (JPanel) comps[0];
-            
+            // Remove old feedback if present
             Component last = card.getComponent(card.getComponentCount() - 1);
-            if (last instanceof JLabel && ((JLabel) last).getName() != null && ((JLabel) last).getName().equals("feedback")) {
+            if (last instanceof JLabel && ((JLabel) last).getName() != null
+                    && ((JLabel) last).getName().equals("feedback")) {
                 card.remove(last);
             }
             JLabel fb = new JLabel(msg, SwingConstants.CENTER);
@@ -540,23 +568,11 @@ public class GameWindow extends JFrame {
             card.repaint();
         }
     }
-    // Getters
-    public JTextField getInputField() { 
-        return inputField;   
-    }
-    public JLabel getTimerLabel() { 
-        return timerLabel;   
-    }
-    public JButton getSubmitButton() { 
-        return submitButton; 
-    }
-    public JButton getClueButton() {
-        return clueButton; 
-    }
-    public JButton getHintButton() {
-        return hintButton;   
-    }
 
-    // Kept for compatibility — not used for display anymore
+    public JTextField getInputField() { return inputField; }
+    public JLabel getTimerLabel(){ return timerLabel; }
+    public JButton getSubmitButton() { return submitButton; }
+    public JButton getClueButton() { return clueButton; }
+    public JButton getHintButton() { return hintButton; }
     public JTextPane getDisplayArea() { return null; }
 }

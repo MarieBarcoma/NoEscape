@@ -1,14 +1,13 @@
-
 package noescape;
 
 /**
- * LIBRARY ROOM: Room 2 - locked until Classroom is solved.
+ * SECURITY OFFICE ROOM: Room 4 - the final room, locked until TSG is solved.
  *
  * OOP:
  *   Encapsulation - private fields, public methods
  *   Abstraction   - implements RoomBehavior interface
  */
-public class LibraryRoom implements RoomBehavior {
+public class SecurityOfficeRoom implements RoomBehavior {
 
     // Private fields (Encapsulation)
     private String name;
@@ -22,7 +21,7 @@ public class LibraryRoom implements RoomBehavior {
     private int attempts = 0;
 
     // Constructor
-    public LibraryRoom(String name, boolean locked, String puzzle, String answer, String clue, String hint) {
+    public SecurityOfficeRoom(String name, boolean locked, String puzzle, String answer,String clue, String hint) {
         this.name = name;
         this.locked = locked;
         this.puzzle = puzzle;
@@ -74,7 +73,7 @@ public class LibraryRoom implements RoomBehavior {
     @Override
     public void checkAnswer(String userAnswer) {
         if (userAnswer.trim().equalsIgnoreCase(answer)) {
-            solved = true;
+            solved  = true;
             lastMessage = "Correct! You cleared: " + name;
         } else {
             attempts++;
@@ -83,7 +82,7 @@ public class LibraryRoom implements RoomBehavior {
     }
 
     public String getRoomType() {
-        return "Library";
+        return "Security Office";
     }
     public boolean isSolved() {
         return solved;

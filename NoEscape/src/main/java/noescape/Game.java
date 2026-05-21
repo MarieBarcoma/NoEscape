@@ -1,27 +1,50 @@
 package noescape;
- 
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * GAME: Coordinates all game logic and screen transitions.
+ *
+ * Flow: ENTER_NAME → CHOOSE_COURSE → SPLASH → PLAYING → WIN or LOOP
+ *
+ * OOP:
+ *   Encapsulation - private fields, public methods
+ *   Polymorphism  - rooms[] stored as Room (abstract type)
+ *   Abstraction   - IRoom interface defines room contract
+ *   Inheritance   - SplashPanel extends JPanel
+ */
 public class Game {
 
     private GameWindow window;
     private GameDisplay display;
     private Player player;
-    private Room[] rooms;
+    private RoomBehavior[] rooms;
     private int currentRoomIndex;
     private Administrator admin;
     private TimerSystem timer;
     private GameState state;
     private EnvLoader env;
 
+    // Constructor
     public Game() {
-        env = new EnvLoader(".env");
+        env  = new EnvLoader(".env");
         admin = new Administrator();
-        currentRoomIndex = 0;
+        currentRoomIndex  = 0;
         state = GameState.ENTER_NAME;
 
-        window = new GameWindow();
-        display = new GameDisplay(window.getDisplayArea(), window.getTimerLabel(), window);
+        window  = new GameWindow();
+        display = new GameDisplay(
+            window.getDisplayArea(),
+            window.getTimerLabel(),
+            window
+        );
 
-        window.attachListeners(e->processPlayerInput(), e->onCluePressed(),e->onHintPressed());
+        window.attachListeners(
+            e -> processPlayerInput(),
+            e -> onCluePressed(),
+            e -> onHintPressed()
+        );
 
         showEnterName();
         startGameLoop();
@@ -40,7 +63,12 @@ public class Game {
 
     private void showChooseCourse() {
         state = GameState.CHOOSE_COURSE;
-        display.showChooseCourse(player.getName(),e->selectCourse("Computer Science"),e->selectCourse("Nursing"));
+        // Pass button callbacks so the course buttons are clickable
+        display.showChooseCourse(
+            player.getName(),
+            e -> selectCourse("Computer Science"),
+            e -> selectCourse("Nursing")
+        );
         window.setInputEnabled(false);
         window.getSubmitButton().setEnabled(true);
         window.getInputField().setEnabled(true);
@@ -71,9 +99,9 @@ public class Game {
     }
 
     private void onTick() {
-        if(state != GameState.PLAYING) return;
+        if (state != GameState.PLAYING) return;
         display.updateTimer(timer.getSecondsRemaining());
-        if(timer.hasTimeExpired()) triggerLoop();
+        if (timer.hasTimeExpired()) triggerLoop();
     }
 
     private void startGame() {
@@ -88,7 +116,7 @@ public class Game {
 
     private void loadRoom(int index) {
         currentRoomIndex = index;
-        Room room = rooms[index];
+        RoomBehavior room = rooms[index];
         display.showRoom(room, index, rooms.length, player, admin.getMessage(), rooms, index);
         window.setInputEnabled(true);
     }
@@ -96,14 +124,14 @@ public class Game {
     private void processPlayerInput() {
         String input = window.getInputField().getText().trim();
         window.getInputField().setText("");
-        if(input.isEmpty()) return;
+        if (input.isEmpty()) return;
 
         switch (state) {
-            case ENTER_NAME->handleEnterName(input);
-            case CHOOSE_COURSE->handleChooseCourse(input);
-            case SPLASH->handleSplashInput(input);
-            case WIN, LOOP->handleEndInput(input);
-            case PLAYING->handlePlayingInput(input);
+            case ENTER_NAME -> handleEnterName(input);
+            case CHOOSE_COURSE -> handleChooseCourse(input);
+            case SPLASH -> handleSplashInput(input);
+            case WIN, LOOP -> handleEndInput(input);
+            case PLAYING -> handlePlayingInput(input);
         }
     }
 
@@ -114,12 +142,12 @@ public class Game {
 
     private void handleChooseCourse(String input) {
         if(input.equals("1")) selectCourse("Computer Science");
-        else if(input.equals("2")) selectCourse("Nursing");
+        else if (input.equals("2")) selectCourse("Nursing");
         else display.showFeedback("Type  1  or  2  to choose your course.", GameWindow.COL_YELLOW);
     }
 
     private void handleSplashInput(String input) {
-        if(input.equalsIgnoreCase("start")) startGame();
+        if (input.equalsIgnoreCase("start")) startGame();
         else display.showFeedback("Type  START  to begin.", GameWindow.COL_YELLOW);
     }
 
@@ -137,27 +165,30 @@ public class Game {
             return;
         }
 
-        Room room = rooms[currentRoomIndex];
+        RoomBehavior room = rooms[currentRoomIndex];
 
-        if(room.isSolved()) {
+        if (room.isSolved()) {
             display.showFeedback("Already solved! Move to the next room.", GameWindow.COL_GREEN);
             return;
         }
-        if(room.isLocked()) {
+        if (room.isLocked()) {
             display.showFeedback("This room is locked.", GameWindow.COL_RED);
             return;
         }
-        if(room.getAttempts() >= player.getMaxAttempts()) {
+        if (room.getAttempts() >= player.getMaxAttempts()) {
             display.showFeedback("No more attempts. Press Hint for help.", GameWindow.COL_RED);
             return;
         }
+
         room.checkAnswer(input);
 
-        if(room.isSolved()) {
+        if (room.isSolved()) {
             display.showFeedback("✓  Correct!  " + room.getLastMessage(), GameWindow.COL_GREEN);
             onRoomSolved();
-        }else{
-            display.showFeedback("✗  " + room.getLastMessage() + "  (" + room.getAttempts() + "/" + player.getMaxAttempts() + ")",GameWindow.COL_RED);
+        } else {
+            display.showFeedback("✗  " + room.getLastMessage()
+                + "  (" + room.getAttempts() + "/" + player.getMaxAttempts() + ")",
+                GameWindow.COL_RED);
         }
     }
 
@@ -167,9 +198,9 @@ public class Game {
             admin.sendMessage("Unlocked: " + rooms[currentRoomIndex + 1].getName());
         }
         player.setProgress(player.getProgress() + 1);
-        if(allRoomsSolved()) {
+        if (allRoomsSolved()) {
             triggerWin();
-        }else{
+        } else {
             // Brief pause then load next room
             javax.swing.Timer t = new javax.swing.Timer(900, e -> loadRoom(currentRoomIndex + 1));
             t.setRepeats(false);
@@ -178,15 +209,15 @@ public class Game {
     }
 
     private void onCluePressed() {
-        if(state != GameState.PLAYING) return;
-        Room room = rooms[currentRoomIndex];
+        if (state != GameState.PLAYING) return;
+        RoomBehavior room = rooms[currentRoomIndex];
         room.showClue();
         display.showFeedback("🔍  " + room.getLastMessage(), GameWindow.COL_CYAN);
     }
 
     private void onHintPressed() {
-        if(state != GameState.PLAYING) return;
-        Room room = rooms[currentRoomIndex];
+        if (state != GameState.PLAYING) return;
+        RoomBehavior room = rooms[currentRoomIndex];
         room.showHint();
         display.showFeedback("💡  " + room.getLastMessage(), GameWindow.COL_YELLOW);
     }
@@ -221,7 +252,7 @@ public class Game {
     }
 
     private boolean allRoomsSolved() {
-        for (Room r : rooms) if (!r.isSolved()) return false;
+        for (RoomBehavior r : rooms) if (!r.isSolved()) return false;
         return true;
     }
 }
