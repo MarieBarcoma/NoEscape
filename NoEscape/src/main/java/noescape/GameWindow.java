@@ -14,27 +14,31 @@ import java.awt.event.*;
  */
 public class GameWindow {
 
-    public static final Color BG_DARK = new Color(13, 13, 23);
-    public static final Color BG_CARD = new Color(22, 22, 40);
-    public static final Color BG_INPUT = new Color(18, 18, 32);
-    public static final Color COL_PURPLE = new Color(160, 80, 220);
-    public static final Color COL_CYAN = new Color(60, 200, 220);
-    public static final Color COL_GREEN = new Color(60, 200, 100);
-    public static final Color COL_YELLOW = new Color(240, 200, 60);
-    public static final Color COL_RED = new Color(220, 70, 70);
-    public static final Color COL_ORANGE = new Color(230, 140, 50);
-    public static final Color COL_TEXT = new Color(210, 210, 230);
-    public static final Color COL_DIM = new Color(130, 120, 155);
-    public static final Color COL_BORDER = new Color(55, 45, 85);
+    // ── Color Palette ────────────────────────────────────────────────────────
+    public static final Color BG_DARK    = new Color(13,  13,  23);
+    public static final Color BG_CARD    = new Color(22,  22,  40);
+    public static final Color BG_INPUT   = new Color(18,  18,  32);
+    public static final Color COL_PURPLE = new Color(160,  80, 220);
+    public static final Color COL_CYAN   = new Color( 60, 200, 220);
+    public static final Color COL_GREEN  = new Color( 60, 200, 100);
+    public static final Color COL_YELLOW = new Color(240, 200,  60);
+    public static final Color COL_RED    = new Color(220,  70,  70);
+    public static final Color COL_ORANGE = new Color(230, 140,  50);
+    public static final Color COL_TEXT   = new Color(210, 210, 230);
+    public static final Color COL_DIM    = new Color(130, 120, 155);
+    public static final Color COL_BORDER = new Color( 55,  45,  85);
 
-    private JFrame window;
-    private JLabel timerLabel;
-    private JLabel roomLabel;
+    // ── Frame & persistent components ────────────────────────────────────────
+    private JFrame     window;
+    private JLabel     timerLabel;
+    private JLabel     roomLabel;
+    private JPanel     cardArea;      // center — swapped per screen
     private JTextField inputField;
-    private JButton submitButton;
-    private JButton clueButton;
-    private JButton hintButton;
+    private JButton    submitButton;
+    private JButton    clueButton;
+    private JButton    hintButton;
 
+    // ── Callbacks set by Game ─────────────────────────────────────────────────
     private ActionListener onCourseCS;
     private ActionListener onCourseNursing;
 
@@ -42,6 +46,7 @@ public class GameWindow {
         buildWindow();
     }
 
+    // ── Window ───────────────────────────────────────────────────────────────
     private void buildWindow() {
         window = new JFrame("NO ESCAPE");
         window.setSize(860, 640);
@@ -52,11 +57,13 @@ public class GameWindow {
         window.setLocationRelativeTo(null);
 
         window.add(buildHeader(), BorderLayout.NORTH);
+        window.add(buildCardArea(), BorderLayout.CENTER);
         window.add(buildFooter(), BorderLayout.SOUTH);
 
         window.setVisible(true);
     }
 
+    // ── Header ───────────────────────────────────────────────────────────────
     private JPanel buildHeader() {
         JPanel h = new JPanel(new BorderLayout());
         h.setBackground(new Color(8, 8, 18));
@@ -72,11 +79,20 @@ public class GameWindow {
         timerLabel.setForeground(COL_YELLOW);
         timerLabel.setBorder(new EmptyBorder(0, 0, 0, 18));
 
-        h.add(roomLabel, BorderLayout.CENTER);
+        h.add(roomLabel,  BorderLayout.CENTER);
         h.add(timerLabel, BorderLayout.EAST);
         return h;
     }
 
+    // ── Card Area (swappable center) ──────────────────────────────────────────
+    private JPanel buildCardArea() {
+        cardArea = new JPanel(new BorderLayout());
+        cardArea.setBackground(BG_DARK);
+        cardArea.setBorder(new EmptyBorder(18, 28, 10, 28));
+        return cardArea;
+    }
+
+    // ── Footer ───────────────────────────────────────────────────────────────
     private JPanel buildFooter() {
         JPanel footer = new JPanel(new BorderLayout(8, 0));
         footer.setBackground(BG_DARK);
@@ -96,8 +112,8 @@ public class GameWindow {
         ));
 
         submitButton = makeBtn("Submit", COL_GREEN);
-        clueButton = makeBtn("Clue", COL_CYAN);
-        hintButton = makeBtn("Hint", COL_YELLOW);
+        clueButton   = makeBtn("Clue",   COL_CYAN);
+        hintButton   = makeBtn("Hint",   COL_YELLOW);
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         btns.setBackground(BG_DARK);
@@ -106,10 +122,19 @@ public class GameWindow {
         btns.add(submitButton);
 
         footer.add(inputField, BorderLayout.CENTER);
-        footer.add(btns, BorderLayout.EAST);
+        footer.add(btns,       BorderLayout.EAST);
         return footer;
     }
 
+    // ── Swap the center card ──────────────────────────────────────────────────
+    private void swapCard(JPanel panel) {
+        cardArea.removeAll();
+        cardArea.add(panel, BorderLayout.CENTER);
+        cardArea.revalidate();
+        cardArea.repaint();
+    }
+
+    // ── SCREEN: Enter Name ────────────────────────────────────────────────────
     public void showEnterNameScreen() {
         roomLabel.setText("");
         JPanel card = makeCard();
@@ -132,10 +157,15 @@ public class GameWindow {
         inner.add(makeCenteredLabel("What is your name?", COL_YELLOW, 16, Font.BOLD));
         inner.add(Box.createVerticalStrut(10));
         inner.add(makeCenteredLabel("Type your name below and press  Submit.", COL_DIM, 13, Font.PLAIN));
+
+        card.add(inner);
+        swapCard(card);
     }
 
     // ── SCREEN: Choose Course ─────────────────────────────────────────────────
-    public void showChooseCourseScreen(String playerName, ActionListener csAction, ActionListener nursingAction) {
+    public void showChooseCourseScreen(String playerName,
+                                       ActionListener csAction,
+                                       ActionListener nursingAction) {
         roomLabel.setText("Choose Your Course");
         JPanel card = makeCard();
         card.setLayout(new GridBagLayout());
@@ -169,8 +199,10 @@ public class GameWindow {
         inner.add(makeCenteredLabel("Or type  1  or  2  and press Submit.", COL_DIM, 12, Font.PLAIN));
 
         card.add(inner);
+        swapCard(card);
     }
 
+    // ── SCREEN: Splash / Ready ────────────────────────────────────────────────
     public void showSplashScreen(Player player) {
         roomLabel.setText("Ready to Play");
         JPanel card = makeCard();
@@ -184,11 +216,11 @@ public class GameWindow {
         inner.add(Box.createVerticalStrut(24));
         inner.add(makeDivider());
         inner.add(Box.createVerticalStrut(18));
-        inner.add(makeCenteredLabel("Player  :  " + player.getName(), COL_TEXT, 15, Font.PLAIN));
+        inner.add(makeCenteredLabel("Player  :  " + player.getName(),        COL_TEXT,   15, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
-        inner.add(makeCenteredLabel("Course  :  " + player.getCourse(), COL_CYAN,15, Font.PLAIN));
+        inner.add(makeCenteredLabel("Course  :  " + player.getCourse(),      COL_CYAN,   15, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
-        inner.add(makeCenteredLabel("Attempts:  " + player.getMaxAttempts() + " per room", COL_TEXT, 14, Font.PLAIN));
+        inner.add(makeCenteredLabel("Attempts:  " + player.getMaxAttempts() + " per room",  COL_TEXT, 14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(6));
         inner.add(makeCenteredLabel("Bonus   :  +" + player.getBonusSeconds() + " seconds", COL_GREEN, 14, Font.PLAIN));
         inner.add(Box.createVerticalStrut(26));
@@ -200,6 +232,7 @@ public class GameWindow {
             "Begin the time loop",
             COL_GREEN,
             e -> {
+                // fire the same action as typing START
                 inputField.setText("start");
                 submitButton.doClick();
             }
@@ -208,14 +241,19 @@ public class GameWindow {
         inner.add(startBtn);
 
         card.add(inner);
+        swapCard(card);
     }
 
-    public void showRoomScreen(RoomBehavior room, int index, int total, Player player, String adminMsg, RoomBehavior[] rooms, int currentIndex) {
+    // ── SCREEN: Room ─────────────────────────────────────────────────────────
+    public void showRoomScreen(RoomBehavior room, int index, int total,
+                               Player player, String adminMsg,
+                               RoomBehavior[] rooms, int currentIndex) {
         roomLabel.setText("Room " + (index + 1) + " of " + total + "  —  " + room.getName());
 
         JPanel card = makeCard();
         card.setLayout(new BorderLayout(0, 14));
 
+        // Top: room header + puzzle
         JPanel top = new JPanel();
         top.setOpaque(false);
         top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
@@ -228,6 +266,7 @@ public class GameWindow {
             top.add(Box.createVerticalStrut(8));
             top.add(makeCenteredLabel("Solve the previous room first.", COL_DIM, 13, Font.PLAIN));
         } else {
+            // Puzzle box
             JPanel puzzleBox = new JPanel();
             puzzleBox.setOpaque(true);
             puzzleBox.setBackground(new Color(30, 20, 55));
@@ -244,10 +283,12 @@ public class GameWindow {
             puzzleBox.add(puzzleIcon);
             puzzleBox.add(Box.createVerticalStrut(10));
 
+            // Word-wrap puzzle text into multiple labels
             for (String part : wrapText(puzzle, 55)) {
                 puzzleBox.add(makeCenteredLabel(part, COL_TEXT, 14, Font.PLAIN));
             }
 
+            // Constrain puzzle box width
             JPanel puzzleWrap = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
             puzzleWrap.setOpaque(false);
             puzzleBox.setMaximumSize(new Dimension(560, 120));
@@ -259,6 +300,7 @@ public class GameWindow {
             top.add(makeCenteredLabel("Use the  Clue  or  Hint  buttons if stuck.", COL_DIM, 12, Font.PLAIN));
         }
 
+        // Bottom: admin message + room map
         JPanel bottom = new JPanel();
         bottom.setOpaque(false);
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
@@ -270,8 +312,10 @@ public class GameWindow {
 
         card.add(top,    BorderLayout.CENTER);
         card.add(bottom, BorderLayout.SOUTH);
+        swapCard(card);
     }
 
+    // ── SCREEN: Win ───────────────────────────────────────────────────────────
     public void showWinScreen(Player player, int secondsLeft, String adminMsg) {
         roomLabel.setText("YOU ESCAPED!");
         JPanel card = makeCard();
@@ -319,8 +363,10 @@ public class GameWindow {
         inner.add(exitWinBtn);
 
         card.add(inner);
+        swapCard(card);
     }
 
+    // ── SCREEN: Loop ──────────────────────────────────────────────────────────
     public void showLoopScreen(Player player, String adminMsg) {
         roomLabel.setText("You Failed!");
         JPanel card = makeCard();
@@ -363,18 +409,20 @@ public class GameWindow {
         inner.add(exitBtn);
 
         card.add(inner);
+        swapCard(card);
     }
 
+    // ── Room Map ──────────────────────────────────────────────────────────────
     private JPanel buildRoomMap(RoomBehavior[] rooms, int currentIndex) {
         JPanel map = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         map.setOpaque(false);
         for (int i = 0; i < rooms.length; i++) {
             Color c;
             String icon;
-            if (rooms[i].isSolved()) { c = COL_GREEN;  icon = "✓"; }
-            else if (i == currentIndex) { c = COL_PURPLE; icon = "►"; }
-            else if (rooms[i].isLocked()) { c = COL_DIM;    icon = "🔒"; }
-            else { c = COL_YELLOW; icon = " "; }
+            if      (rooms[i].isSolved())     { c = COL_GREEN;  icon = "✓"; }
+            else if (i == currentIndex)        { c = COL_PURPLE; icon = "►"; }
+            else if (rooms[i].isLocked())      { c = COL_DIM;    icon = "🔒"; }
+            else                               { c = COL_YELLOW; icon = " "; }
 
             JPanel chip = new JPanel();
             chip.setOpaque(true);
@@ -395,7 +443,7 @@ public class GameWindow {
         return map;
     }
 
-    
+    // ── Component Factories ───────────────────────────────────────────────────
 
     // Dark card panel
     private JPanel makeCard() {
@@ -417,6 +465,7 @@ public class GameWindow {
         return lbl;
     }
 
+    // Big purple title label
     private JLabel makeTitleLabel(String text, Color color, int size) {
         JLabel lbl = new JLabel(text, SwingConstants.CENTER);
         lbl.setFont(new Font("Consolas", Font.BOLD, size));
@@ -425,6 +474,7 @@ public class GameWindow {
         return lbl;
     }
 
+    // Thin horizontal divider line
     private JPanel makeDivider() {
         JPanel d = new JPanel() {
             @Override protected void paintComponent(Graphics g) {
@@ -439,6 +489,7 @@ public class GameWindow {
         return d;
     }
 
+    // Large clickable course selection button
     private JButton makeBigCourseBtn(String title, String subtitle, Color accent, ActionListener action) {
         JButton btn = new JButton() {
             @Override protected void paintComponent(Graphics g) {
@@ -569,10 +620,13 @@ public class GameWindow {
         }
     }
 
-    public JTextField getInputField() { return inputField; }
-    public JLabel getTimerLabel(){ return timerLabel; }
-    public JButton getSubmitButton() { return submitButton; }
-    public JButton getClueButton() { return clueButton; }
-    public JButton getHintButton() { return hintButton; }
+    // Getters
+    public JTextField getInputField()   { return inputField;   }
+    public JLabel     getTimerLabel()   { return timerLabel;   }
+    public JButton    getSubmitButton() { return submitButton; }
+    public JButton    getClueButton()   { return clueButton;   }
+    public JButton    getHintButton()   { return hintButton;   }
+
+    // Kept for compatibility — not used for display anymore
     public JTextPane getDisplayArea() { return null; }
 }
