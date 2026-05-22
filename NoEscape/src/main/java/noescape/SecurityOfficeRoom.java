@@ -1,90 +1,53 @@
 package noescape;
 
 /**
- * SecurityOfficeRoom
- * Implements RoomBehavior directly.
- *
  * OOP:
- *   Encapsulation - all fields are private
- *   Abstraction   - implements RoomBehavior
+ *   Inheritance  — extends BaseRoom (shares name, lock, attempt tracking)
+ *   Polymorphism — showHint() has a side-effect (re-locking) unique to this room
  */
-public class SecurityOfficeRoom implements RoomBehavior {
+public class SecurityOfficeRoom extends BaseRoom {
+    private boolean hintPenaltyTriggered = false;
 
-    private String  name;
-    private boolean locked;
-    private String  puzzle;
-    private String  answer;
-    private String  clue;
-    private String  hint;
-    private String  lastMessage = "";
-    private boolean solved      = false;
-    private int     attempts    = 0;
-
-    public SecurityOfficeRoom(String name, boolean locked,
-                        String puzzle, String answer,
-                        String clue,   String hint) {
-        this.name   = name;
-        this.locked = locked;
-        this.puzzle = puzzle;
-        this.answer = answer;
-        this.clue   = clue;
-        this.hint   = hint;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean isLocked() {
-        return locked;
-    }
-
-    @Override
-    public void unlock() {
-        this.locked = false;
-    }
-
-    @Override
-    public boolean enter(Player player) {
-        if (locked) {
-            lastMessage = "Room is locked! Solve the previous room first.";
-            return false;
-        }
-        lastMessage = "You entered: " + name;
-        return true;
-    }
-
-    @Override
-    public void showPuzzle() {
-        lastMessage = "PUZZLE: " + puzzle;
+    public SecurityOfficeRoom(String name, boolean isLocked, String puzzleQuestion, String correctAnswer, String clueText, String hintText) {
+        super(name, isLocked, puzzleQuestion, correctAnswer, clueText, hintText);
     }
 
     @Override
     public void showClue() {
-        lastMessage = "CLUE: " + clue;
+        lastMessage = "CLUE (Security Feed): " + clueText;
     }
 
     @Override
     public void showHint() {
-        lastMessage = "HINT: " + hint;
+        hintPenaltyTriggered = true;
+        unlock();
+        lastMessage = "⚠ SECURITY ALERT! Hint request flagged. " + "Lockdown initiated — room re-locked! " + "HINT: " + hintText;
     }
 
     @Override
-    public void checkAnswer(String userAnswer) {
-        if (userAnswer.trim().equalsIgnoreCase(answer)) {
-            solved      = true;
-            lastMessage = "Correct! You cleared: " + name;
+    public boolean isLocked() {
+        return hintPenaltyTriggered || super.isLocked();
+    }
+
+    @Override
+    public void unlock() {
+        hintPenaltyTriggered = false;
+        super.unlock();
+    }
+
+    @Override
+    public void checkAnswer(String playerAnswer) {
+        if (playerAnswer.trim().equalsIgnoreCase(correctAnswer)) {
+            isSolved = true;
+            lastMessage = "Correct! You cleared: " + getName();
         } else {
-            attempts++;
-            lastMessage = "Wrong answer. Attempt " + attempts + " used.";
+            attemptCount++;
+            lastMessage = "Wrong answer. Attempt " + attemptCount + " used.";
         }
     }
 
-    @Override public String  getRoomType()    { return "Security Office";    }
-    @Override public boolean isSolved()       { return solved;      }
-    @Override public int     getAttempts()    { return attempts;    }
-    @Override public String  getLastMessage() { return lastMessage; }
-    @Override public String  getPuzzle()      { return puzzle;      }
+    @Override
+    public String getRoomType() { 
+        return "Security Office"; 
+    }
 }

@@ -1,46 +1,36 @@
 package noescape;
 
 /**
- * TimerSystem
- * Tracks the countdown timer for the game.
- * When time reaches zero, the loop resets.
- *
- * OOP: Encapsulation - timer state is hidden, only public methods exposed.
+ * OOP: Encapsulation — timer state is fully hidden; only elapsed/remaining
+ *      time and lifecycle methods are exposed publicly.
  */
 public class TimerSystem {
+    private long startTimeMillis;
+    private final int timeLimitSeconds;
+    private boolean isRunning;
 
-    private long    startTime;
-    private int     timeLimit;
-    private boolean running;
-
-    public TimerSystem(int timeLimitInSeconds) {
-        this.timeLimit = timeLimitInSeconds;
-        this.running   = false;
+    public TimerSystem(int timeLimitSeconds) {
+        this.timeLimitSeconds = timeLimitSeconds;
+        this.isRunning = false;
     }
 
-    // Start the countdown
     public void start() {
-        this.startTime = System.currentTimeMillis();
-        this.running   = true;
+        this.startTimeMillis = System.currentTimeMillis();
+        this.isRunning = true;
     }
 
-    // Stop the countdown
     public void stop() {
-        this.running = false;
+        this.isRunning = false;
     }
 
-    // Returns true if time has run out
     public boolean hasTimeExpired() {
-        return running && getSecondsRemaining() <= 0;
+        return isRunning && getSecondsRemaining() <= 0;
     }
 
-    // How many seconds are left
     public int getSecondsRemaining() {
-        long elapsed = (System.currentTimeMillis() - startTime) / 1000;
-        return (int) Math.max(0, timeLimit - elapsed);
+        long elapsedSeconds = (System.currentTimeMillis() - startTimeMillis) / 1000;
+        return (int) Math.max(0, timeLimitSeconds - elapsedSeconds);
     }
 
-    public boolean isRunning() {
-        return running;
-    }
+    public boolean isRunning() { return isRunning; }
 }

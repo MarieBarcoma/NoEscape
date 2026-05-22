@@ -1,90 +1,38 @@
 package noescape;
 
 /**
- * TsgRoom
- * Implements RoomBehavior directly.
- *
  * OOP:
- *   Encapsulation - all fields are private
- *   Abstraction   - implements RoomBehavior
+ *   Inheritance  — extends BaseRoom (shares name, lock, attempt tracking)
+ *   Polymorphism — checkAnswer() uses strict exact matching, unlike all other rooms
  */
-public class TsgRoom implements RoomBehavior {
-
-    private String  name;
-    private boolean locked;
-    private String  puzzle;
-    private String  answer;
-    private String  clue;
-    private String  hint;
-    private String  lastMessage = "";
-    private boolean solved      = false;
-    private int     attempts    = 0;
-
-    public TsgRoom(String name, boolean locked,
-                        String puzzle, String answer,
-                        String clue,   String hint) {
-        this.name   = name;
-        this.locked = locked;
-        this.puzzle = puzzle;
-        this.answer = answer;
-        this.clue   = clue;
-        this.hint   = hint;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public boolean isLocked() {
-        return locked;
-    }
-
-    @Override
-    public void unlock() {
-        this.locked = false;
-    }
-
-    @Override
-    public boolean enter(Player player) {
-        if (locked) {
-            lastMessage = "Room is locked! Solve the previous room first.";
-            return false;
-        }
-        lastMessage = "You entered: " + name;
-        return true;
-    }
-
-    @Override
-    public void showPuzzle() {
-        lastMessage = "PUZZLE: " + puzzle;
+public class TsgRoom extends BaseRoom {
+    public TsgRoom(String name, boolean isLocked, String puzzleQuestion, String correctAnswer, String clueText, String hintText) {
+        super(name, isLocked, puzzleQuestion, correctAnswer, clueText, hintText);
     }
 
     @Override
     public void showClue() {
-        lastMessage = "CLUE: " + clue;
+        lastMessage = "CLUE: " + clueText + "  [TSG Terminal: answer is case-sensitive!]";
     }
 
     @Override
     public void showHint() {
-        lastMessage = "HINT: " + hint;
+        lastMessage = "HINT: " + hintText;
     }
 
     @Override
-    public void checkAnswer(String userAnswer) {
-        if (userAnswer.trim().equalsIgnoreCase(answer)) {
-            solved      = true;
-            lastMessage = "Correct! You cleared: " + name;
+    public void checkAnswer(String playerAnswer) {
+        if (playerAnswer.equals(correctAnswer)) {
+            isSolved = true;
+            lastMessage = "Correct! You cleared: " + getName();
         } else {
-            attempts++;
-            lastMessage = "Wrong answer. Attempt " + attempts + " used.";
+            attemptCount++;
+            lastMessage = "Wrong answer (case-sensitive). Attempt " + attemptCount + " used. " + "Check your capitalisation!";
         }
     }
 
-    @Override public String  getRoomType()    { return "TSG";    }
-    @Override public boolean isSolved()       { return solved;      }
-    @Override public int     getAttempts()    { return attempts;    }
-    @Override public String  getLastMessage() { return lastMessage; }
-    @Override public String  getPuzzle()      { return puzzle;      }
+    @Override
+    public String getRoomType() { 
+        return "TSG"; 
+    }
 }
